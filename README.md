@@ -11,14 +11,24 @@ This project uses TF-IDF to generate True/False quiz questions from text files.
 
 ## Instructions to Run Code Locally
 
-1. **Install Dependencies**:
-   - Ensure you are in a virtual environment (optional but recommended).
-   - Run the following command to install the required libraries:
+
+1. **Create and Activate a Virtual Environment** (recommended):
+   - **On macOS/Linux**:
+     ```bash
+     python3 -m venv venv
+     source venv/bin/activate
+     ```
+   - **On Windows**:
+     ```bash
+     python -m venv venv
+     venv\Scripts\activate
+     ```
+2. **Install Dependencies**:
      ```bash
      pip install -r requirements.txt
      ```
 
-2. **Run the Code**:
+3. **Run the Code**:
    - Run the main Python file to generate quiz questions from the text files in the `Test Bank` folder.
 
 ## Sample Code Execution
