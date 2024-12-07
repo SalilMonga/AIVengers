@@ -1,0 +1,20 @@
+# Flutter-specific
+.dart_tool/
+.idea/
+.vscode/
+build/*
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.metadata
+linux/*
+
+# iOS-specific
+ios/*
+
+# Android-specific
+android/*
+
+macos/*
+web/*
+windows/*
