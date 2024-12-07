@@ -131,5 +131,115 @@ class TestQuizGenerator(unittest.TestCase):
         self.assertLessEqual(len(statements), 5)
         self.assertGreaterEqual(len(statements), 0)  # Allow for 0 statements if data is insufficient
 
+    def test_specific_topic_inclusion(self):
+        """Ensure statements cover at least one specified topic."""
+        topics = ["Indexing", "Multidimensional arrays"]
+        split_topics = [word.lower() for topic in topics for word in topic.split()]
+        quiz_terms = select_quiz_terms(self.tfidf_scores, n_terms=10, variation=2, guaranteed_terms=split_topics)
+        statements = generate_true_false_statements(self.sample_text, quiz_terms, num_questions=5)
+
+        # Debugging outputs
+        print("Guaranteed Topics:", topics)
+        print("Selected Quiz Terms:", quiz_terms)
+        print("Generated Statements:")
+        for s, _ in statements:
+            print(f"- {s}")
+
+        # Check if at least one topic (or word) is included in any statement
+        topic_found = any(
+            any(term in statement.lower() for term in split_topics)
+            for statement, _ in statements
+        )
+        self.assertTrue(topic_found, f"No statement includes any of the required topics: {topics}")
+
+    def test_coverage_of_all_available_topics(self):
+        """Ensure all topics are covered over multiple runs."""
+        topics = list(self.tfidf_scores.keys())
+        generated_topics = set()
+
+        for _ in range(10):  # Run multiple times to increase topic coverage
+            quiz_terms = select_quiz_terms(self.tfidf_scores, n_terms=5, variation=2)
+            statements = generate_true_false_statements(self.sample_text, quiz_terms, num_questions=5)
+            for statement, _ in statements:
+                for topic in topics:
+                    if topic in statement.lower():
+                        generated_topics.add(topic)
+
+        # Identify topics that were not covered
+        missing_topics = set(topics) - generated_topics
+        print(f"Topics not covered: {missing_topics}")
+
+        # Relaxed condition: allow a small percentage of topics to be uncovered
+        coverage_threshold = 0.9  # Require at least 90% of topics to be covered
+        coverage_ratio = len(generated_topics) / len(topics)
+
+        self.assertGreaterEqual(
+            coverage_ratio, coverage_threshold,
+            f"Only {coverage_ratio:.0%} of topics were covered. Missing topics: {missing_topics}"
+        )
+
+    def test_accurate_feedback_for_true_statements(self):
+        """Verify 'True' responses to factual statements."""
+        quiz_terms = select_quiz_terms(self.tfidf_scores, n_terms=5, variation=2)
+        statements = generate_true_false_statements(self.sample_text, quiz_terms, num_questions=5)
+
+        true_statements = [s for s, is_true in statements if is_true]
+        for statement in true_statements:
+            self.assertIn(statement.lower(), self.sample_text.lower(), "True statement does not match the source text.")
+
+    def test_accurate_feedback_for_false_statements(self):
+        """Verify 'False' responses to incorrect statements."""
+        quiz_terms = select_quiz_terms(self.tfidf_scores, n_terms=5, variation=2)
+        statements = generate_true_false_statements(self.sample_text, quiz_terms, num_questions=5)
+
+        false_statements = [s for s, is_true in statements if not is_true]
+        for false_statement in false_statements:
+            self.assertNotIn(false_statement.lower(), self.sample_text.lower(),
+                             "False statement is incorrectly in the source text.")
+
+    def test_invalid_feedback_mechanism(self):
+        """Ensure invalid feedback does not break the system."""
+        try:
+            invalid_feedback = generate_true_false_statements(self.sample_text, [], num_questions=5)
+            self.assertEqual(invalid_feedback, [], "Invalid feedback handling should return an empty list.")
+        except Exception as e:
+            self.fail(f"System failed on invalid feedback mechanism: {e}")
+
+    def test_randomization_of_questions(self):
+        """Ensure question order is randomized between runs."""
+        quiz_terms = select_quiz_terms(self.tfidf_scores, n_terms=5, variation=2)
+        first_run = generate_true_false_statements(self.sample_text, quiz_terms, num_questions=5)
+        second_run = generate_true_false_statements(self.sample_text, quiz_terms, num_questions=5)
+
+        self.assertNotEqual(first_run, second_run, "Statement order is not randomized between runs.")
+
+    def test_configurable_topics(self):
+        """Ensure at least one generated statement relates to a specific topic."""
+        topics = ["memory allocation"]
+        split_topics = [word.lower() for topic in topics for word in topic.split()]
+        quiz_terms = select_quiz_terms(self.tfidf_scores, n_terms=5, variation=2, guaranteed_terms=split_topics)
+        statements = generate_true_false_statements(self.sample_text, quiz_terms, num_questions=5)
+
+        # Debugging outputs
+        print("Guaranteed Topics:", topics)
+        print("Split Topics:", split_topics)
+        print("Selected Quiz Terms:", quiz_terms)
+        print("Generated Statements:")
+        for statement, is_true in statements:
+            print(f"- {statement} (True: {is_true})")
+
+        # Check if at least one word from split topics appears in generated statements
+        matched_topics = set()
+        for statement, _ in statements:
+            for word in split_topics:
+                if word in statement.lower():
+                    matched_topics.add(word)
+
+        print(f"Matched Topics: {matched_topics}")
+        self.assertTrue(
+            len(matched_topics) > 0,
+            f"No statement relates to any of the specified topics: {topics}."
+        )
+
 if __name__ == "__main__":
     unittest.main()
