@@ -1,134 +1,119 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
 import os
 import random
-from sklearn.feature_extraction.text import TfidfVectorizer
 import re
+from datetime import datetime
+
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+DEBUG = True
 
 app = Flask(__name__)
 CORS(app)
 
+
+def debug_print(message):
+    if DEBUG:
+        print(message)
+
+
 # Load and preprocess the text
-def load_text(file_path):
-    encodings = ['utf-8', 'utf-8-sig', 'latin1', 'ISO-8859-1']
-    text = None
-
-    for encoding in encodings:
-        try:
-            with open(file_path, 'r', encoding=encoding) as file:
-                text = file.read()
-            break
-        except UnicodeDecodeError:
-            continue
-
-    if text is None:
-        raise ValueError("Unable to read the file with the tried encodings.")
-
-    # Clean up text
-    text = re.sub(r'\s+', ' ', text)
-    text = re.sub(r'[^a-zA-Z0-9.,!? ]+', '', text)
+def preprocess_text(text):
+    text = re.sub(r'\s+', ' ', text)  # Replace multiple spaces/newlines with a single space
+    text = re.sub(r'[^a-zA-Z0-9.,!? ]+', '', text)  # Remove special characters
     text = text.lower()
-
     return text
+
 
 # Calculate TF-IDF
 def calculate_tfidf(text):
-    vectorizer = TfidfVectorizer(stop_words='english')
-    tfidf_matrix = vectorizer.fit_transform([text])
-    tfidf_scores = dict(zip(vectorizer.get_feature_names_out(), tfidf_matrix.toarray()[0]))
-    return tfidf_scores
+    if not text.strip():
+        return {}
 
-# Select key terms for quiz with varied ranking to avoid repetition
+    vectorizer = TfidfVectorizer(stop_words='english')
+    try:
+        tfidf_matrix = vectorizer.fit_transform([text])
+        tfidf_scores = dict(zip(vectorizer.get_feature_names_out(), tfidf_matrix.toarray()[0]))
+        debug_print(f"TF-IDF Terms: {tfidf_scores.keys()}")
+        return tfidf_scores
+    except ValueError as e:
+        debug_print(f"Error calculating TF-IDF: {e}")
+        return {}
+
+
+# Select key terms for quiz with varied ranking
 def select_quiz_terms(tfidf_scores, n_terms=5, variation=10):
     sorted_terms = sorted(tfidf_scores.items(), key=lambda item: item[1], reverse=True)
     selected_terms = []
     used_terms = set()
-    i = 0
 
+    i = 0
     while len(selected_terms) < n_terms and i < len(sorted_terms):
         term, score = sorted_terms[i]
         if term not in used_terms:
             selected_terms.append(term)
             used_terms.add(term)
-        i += random.randint(1, variation)  # Skip ahead by a random number for variety
+        i += random.randint(1, variation)
 
+    debug_print(f"Selected Quiz Terms: {selected_terms}")
     return selected_terms
 
-# Generate True/False statements, avoiding duplicates
+
+# Generate True/False statements
 def generate_true_false_statements(text, quiz_terms, num_questions):
     sentences = text.split('. ')
     statements = []
     used_sentences = set()
 
     for term in quiz_terms:
-        random.shuffle(sentences)  # Randomize sentence selection for each term
+        random.shuffle(sentences)
         for sentence in sentences:
             if term in sentence and sentence not in used_sentences:
-                # Track used sentences to avoid duplication
                 used_sentences.add(sentence)
 
-                # True statement
+                # Generate true statement
                 true_statement = sentence.strip()
                 statements.append((true_statement, True))
 
-                # False statement: vary replacement term and method
-                random_term = random.choice([t for t in quiz_terms if t != term])
-                modified_sentence = sentence.replace(term, random_term.upper())
-                statements.append((modified_sentence.strip(), False))
+                # Generate false statement
+                alternate_terms = [t for t in quiz_terms if t != term]
+                if alternate_terms:
+                    random_term = random.choice(alternate_terms)
+                    false_statement = sentence.replace(term, random_term.upper())
+                    statements.append((false_statement.strip(), False))
+
                 if len(statements) >= num_questions:
-                    return statements  # Stop if we reach the desired number of questions
-                break
+                    break
 
-    # Ensure we have the exact number of unique statements if possible
-    unique_statements = []
-    seen = set()
-    for statement, is_true in statements:
-        if statement not in seen:
-            seen.add(statement)
-            unique_statements.append((statement, is_true))
-            if len(unique_statements) == num_questions:
-                break
+    return statements[:num_questions]
 
-    return unique_statements
 
 @app.route('/generate-quiz', methods=['POST'])
-def generate_quiz():
+def generate_quiz_api():
+    """
+    API endpoint to generate a quiz from an uploaded file.
+    """
     if 'file' not in request.files:
-        print("No file part in request")
-        return jsonify({"error": "No file part"}), 400
+        return jsonify({"error": "No file provided"}), 400
 
     file = request.files['file']
-    if file.filename == '':
-        print("No selected file")
-        return jsonify({"error": "No selected file"}), 400
+    file_content = file.read().decode('utf-8', errors='ignore')
 
-    # Save the uploaded file
-    file_path = os.path.join('uploads', file.filename)
-    os.makedirs('uploads', exist_ok=True)
-    file.save(file_path)
-    print(f"File saved at {file_path}")  # Debug print
+    # Preprocess the text
+    text = preprocess_text(file_content)
+    if not text.strip():
+        return jsonify({"error": "File is empty or invalid"}), 400
 
-    # Load text and generate quiz
-    try:
-        text = load_text(file_path)
-        print(f"Loaded text from file: {text[:100]}...")  # Debug print to show part of the loaded text
-    except ValueError as e:
-        print(f"Error loading text: {e}")  # Debug print in case of an error
-        return jsonify({"error": str(e)}), 400
-
+    # Generate quiz
     tfidf_scores = calculate_tfidf(text)
-    print(f"TF-IDF scores: {list(tfidf_scores.items())[:10]}")  # Debug print of first 10 TF-IDF scores
-
     quiz_terms = select_quiz_terms(tfidf_scores, n_terms=10, variation=5)
-    print(f"Selected quiz terms: {quiz_terms}")  # Debug print to show selected quiz terms
-
     statements = generate_true_false_statements(text, quiz_terms, num_questions=10)
-    print(f"Generated quiz statements: {statements}")  # Debug print to show generated statements
 
-    # Prepare the response
-    quiz = [{"statement": statement, "is_true": is_true} for statement, is_true in statements]
-    return jsonify(quiz)
+    # Return as JSON
+    quiz = [{"statement": stmt, "is_true": is_true} for stmt, is_true in statements]
+    return jsonify(quiz), 200
+
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)
-
