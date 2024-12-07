@@ -11,14 +11,24 @@ This project uses TF-IDF to generate True/False quiz questions from text files.
 
 ## Instructions to Run Code Locally
 
-1. **Install Dependencies**:
-   - Ensure you are in a virtual environment (optional but recommended).
-   - Run the following command to install the required libraries:
+
+1. **Create and Activate a Virtual Environment** (recommended):
+   - **On macOS/Linux**:
+     ```bash
+     python3 -m venv venv
+     source venv/bin/activate
+     ```
+   - **On Windows**:
+     ```bash
+     python -m venv venv
+     venv\Scripts\activate
+     ```
+2. **Install Dependencies**:
      ```bash
      pip install -r requirements.txt
      ```
 
-2. **Run the Code**:
+3. **Run the Code**:
    - Run the main Python file to generate quiz questions from the text files in the `Test Bank` folder.
 
 ## Sample Code Execution
@@ -67,11 +77,20 @@ This algorithm generates True/False quiz questions by analyzing text files using
 4. **Duplicate Filtering**:
    - The function removes duplicate statements by tracking sentences and phrases already used, ensuring each quiz question is unique.
 
+## Step 4: Export Quizzes to Files
+1. **File Organization**:
+   - Quizzes are saved in the Quizzes directory.
+2. **Two File Types**:
+   - **With Answers**: Contains both questions and answers.
+   - **Without Answers**: Contains only the questions.
+   - **Timestamped Files**: Files are uniquely named with a timestamp to avoid overwrites.
+
 ## Summary
 
 In summary, this algorithm:
 1. Calculates TF-IDF scores to identify important terms in the text.
 2. Selects a varied set of high-relevance terms for quiz generation.
 3. Generates True/False quiz questions by creating both accurate (True) and altered (False) statements based on the selected terms.
+4. Exports the quizzes in an organized, user-friendly format.
 
 This approach efficiently generates questions that capture key concepts, ensuring a varied and meaningful quiz for each topic.
