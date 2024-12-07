@@ -2,10 +2,17 @@ import os
 import random
 import re
 
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+
 from datetime import datetime
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 DEBUG = True  # Set to True to enable all debugging messages
+
+
+app = Flask(__name__)
+CORS(app)
 
 def debug_print(message):
     """
@@ -236,12 +243,12 @@ def export_quizzes_to_files(quizzes, output_dir="Quizzes"):
 
 
 # Base directory for text bank
-base_dir = os.path.join(os.path.dirname(__file__), 'Test Bank')
+base_dir = os.path.join(os.path.dirname(__file__), 'TestBank')
 
 # List of text files to process
 file_paths = [
-    os.path.join(base_dir, 'Array Basics.txt'),
-    os.path.join(base_dir, 'Introduction to Data Structures.txt'),
+    os.path.join(base_dir, 'ArrayBasics.txt'),
+    os.path.join(base_dir, 'IntroToDS.txt'),
     # Add additional files
 ]
 
@@ -258,3 +265,6 @@ with_answers_file, without_answers_file = export_quizzes_to_files(quizzes, outpu
 print(f"Quizzes exported:")
 print(f"With answers: {with_answers_file}")
 print(f"Without answers: {without_answers_file}")
+
+if __name__ == '__main__':
+    app.run(host='127.0.0.1', port=5000, debug=True)

@@ -1,0 +1,164 @@
+Array is a collection of items of the same variable type that are stored at contiguous memory locations. It is one of the most popular and simple data structures used in programming. 
+Table of Content
+* Basic terminologies of Array
+* Memory representation of Array
+* Declaration of Array
+* Initialization of Array
+* Importance of Array
+* Need or Applications of Array Data Structures 
+* Types of Arrays
+* Operations on Array
+* Complexity Analysis of Operations on Array
+* Frequently Asked Questions (FAQs) on Arrays
+Basic terminologies of Array
+* Array Index: In an array, elements are identified by their indexes. Array index starts from 0.
+* Array element: Elements are items stored in an array and can be accessed by their index.
+* Array Length: The length of an array is determined by the number of elements it can contain.ÿ
+Memory representation of Array
+In an array, all the elements are stored in contiguous memory locations. So, if we initialize an array, the elements will be allocated sequentially in memory. This allows for efficient access and manipulation of elements.
+
+Declaration of Array
+Arrays can be declared in various ways in different languages. For better illustration, below are some language-specific array declarations:
+// This array will store integer type element
+int arr[5];      
+
+// This array will store char type element
+char arr[10];   
+
+// This array will store float type element
+float arr[20];  
+Initialization of Array
+Arrays can be initialized in different ways in different languages. Below are some language-specific array initializations:
+int arr[] = { 1, 2, 3, 4, 5 };
+char arr[5] = { 'a', 'b', 'c', 'd', 'e' };
+float arr[10] = { 1.4, 2.0, 24, 5.0, 0.0 };
+Importance of Array
+Assume there is a class of five students and if we have to keep records of their marks in examination then, we can do this by declaring five variables individual and keeping track of records but what if the number of students becomes very large, it would be challenging to manipulate and maintain the data.
+What it means is that, we can use normal variables (v1, v2, v3, ..) when we have a small number of objects. But if we want to store a large number of instances, it becomes difficult to manage them with normal variables. The idea of an array is to represent many instances in one variable.
+
+Need or Applications of Array Data Structures 
+* Array is a fundamental data structure and many other data structure are implemented using this. Implementing data structures such as stacks and queues 
+* Representing data in tables and matrices 
+* Creating dynamic data structures such as Hash Tables and Graph.
+* When compared to other data structures, arrays have the advantages like random access (we can quickly access i-th item) and cache friendliness (all items are stored at contiguous location)
+Types of Arrays
+Arrays can be classified in two ways:
+* On the basis of Size
+* On the basis of Dimensions
+
+Types of Arrays on the basis of Size: 
+1. Fixed Sized Arrays: 
+We cannot alter or update the size of this array. Here only a fixed size (i,e. the size that is mentioned in square brackets []) of memory will be allocated for storage. In case, we don?t know the size of the array then if we declare a larger size and store a lesser number of elements will result in a wastage of memory or we declare a lesser size than the number of elements then we won?t get enough memory to store all the elements. In such cases, static memory allocation is not preferred. 
+// Method 1 to create a fixed sized array. 
+// Here the memory is allocated at compile time.
+int arr[5]; 
+// Another way (creation and initialization both)
+int arr2[5] = {1, 2, 3, 4, 5}; 
+
+// Method 2 to create a fixed sized array
+// Here memory is allocated at run time (Also
+// known as dynamically allocated arrays)
+int *arr = new int[5]; 
+
+2. Dynamic Sized Arrays:
+The size of the array changes as per user requirements during execution of code so the coders do not have to worry about sizes. They can add and removed the elements as per the need. The memory is mostly dynamically allocated and de-allocated in these arrays.
+#include<vector>
+
+// Dynamic Integer Array
+vector<int> v;
+Types of Arrays on the basis of Dimensions:
+1. One-dimensional Array(1-D Array): You can imagine a 1d array as a row, where elements are stored one after another.
+
+2. Multi-dimensional Array: A multi-dimensional array is an array with more than one dimension. We can use multidimensional array to store complex data in the form of tables, etc. We can have 2-D arrays, 3-D arrays, 4-D arrays and so on. 
+* Two-Dimensional Array(2-D Array or Matrix): 2-D Multidimensional arraysÿcan be considered as an array of arrays or as a matrix consisting of rows and columns.
+
+* Three-Dimensional Array(3-D Array): A 3-DÿMultidimensional arrayÿcontains three dimensions, so it can be considered an array of two-dimensional arrays.
+
+Operations on Array
+1. Array Traversal:
+Array traversal involves visiting all the elements of the array once. Below is the implementation of Array traversal in different Languages:
+int arr[] = { 1, 2, 3, 4, 5 };
+int len = sizeof(arr) / sizeof(arr[0]);
+// Traversing over arr[]
+for (int i = 0; i < len; i++) {
+    cout << arr[i] << " ";
+2. Insertion in Array:
+We can insert one or multiple elements at any position in the array. Below is the implementation of Insertion in Array in different languages:
+// Function to insert element
+// at a specific position
+void insertElement(int arr[], int n, int x, int pos)
+{
+    // shift elements to the right
+    // which are on the right side of pos
+    for (int i = n - 1; i >= pos; i--)
+        arr[i + 1] = arr[i];
+ 
+    arr[pos] = x;
+}
+3. Deletion in Array:
+We can delete an element at any index in an array. Below is the implementation of Deletion of element in an array:
+// To search a key to be deleted
+int findElement(int arr[], int n, int key);
+
+// Function to delete an element
+int deleteElement(int arr[], int n, int key)
+{
+    // Find position of element to be deleted
+    int pos = findElement(arr, n, key);
+
+    if (pos == -1) {
+        cout << "Element not found";
+        return n;
+    }
+
+    // Deleting element
+    int i;
+    for (i = pos; i < n - 1; i++)
+        arr[i] = arr[i + 1];
+
+    return n - 1;
+}
+
+// Function to implement search operation
+int findElement(int arr[], int n, int key)
+{
+    int i;
+    for (i = 0; i < n; i++)
+        if (arr[i] == key)
+            return i;
+    // Return -1 if key is not found
+    return -1;
+}
+4. Searching in Array:
+We can traverse over an array and search for an element. Below is the implementation of Deletion of element in an array:
+// Function to implement search operation
+int findElement(int arr[], int n, int key)
+{
+    int i;
+    for (i = 0; i < n; i++)
+        if (arr[i] == key)
+            return i;
+ 
+    // If the key is not found
+    return -1;
+}
+Complexity Analysis of Operations on Array
+Time Complexity:
+OperationBest CaseAverage CaseWorst CaseTraversalê(N)?(N)O(N)Insertionê(1)?(N)O(N)Deletionê(1)?(N)O(N)Searchingê(1)?(N)O(N)Space Complexity:
+OperationBest CaseAverage CaseWorst CaseTraversalê(1)?(1)O(1)Insertionê(1)?(N)O(N)Deletionê(1)?(N)O(N)Searchingê(1)?(1)O(1)Advantages of Array
+* Arrays allow random access to elements. This makes accessing elements by position faster.
+* Arrays have better cache locality which makes a pretty big difference in performance.
+* Arrays represent multiple data items of the same type using a single name.
+* Arrays are used to implement the other data structures like linked lists, stacks, queues, trees, graphs, etc.
+Disadvantages of Array
+* As arrays have a fixed size, once the memory is allocated to them, it cannot be increased or decreased, making it impossible to store extra data if required. An array of fixed size is referred to as a static array.ÿ
+* Allocating less memory than required to an array leads to loss of data.
+* An array is homogeneous in nature so, a single array cannot store values of different data types.ÿ
+* Arrays store data in contiguous memory locations, which makes deletion and insertion very difficult to implement. This problem is overcome by implementing linked lists, which allow elements to be accessed sequentially. ÿ
+Applications of Array
+* They are used in the implementation of other data structures such as array lists, heaps, hash tables, vectors, and matrices.
+* Database records are usually implemented as arrays.
+* It is used in lookup tables by computer.
+Conclusion
+After the discussion, we concluded that arrays are a simple method of accessing elements of the same type by grouping them and we can find the elements efficiently by their indexes and can perform different operations using them. Thus, they are more efficient when it comes to memory allocation and should be used in all modern programming languages. So, this becomes a favorite topic for the perspective of the interview and most of the companies generally asked about the problems on the array. For all these reasons, we must have a good knowledge of it.
+
